@@ -40,14 +40,14 @@ button, so a long run is never triggered by editing a cell. MgHiSal has separate
 train and evaluate buttons for DB15K and MKG-W.
 
 ```bash
-marimo edit --no-sandbox LAFA_main.py
-marimo edit --no-sandbox MgHiSal_main.py
+marimo edit --no-sandbox LAFA.py
+marimo edit --no-sandbox MgHiSal.py
 ```
 
 | Method | Notebook | W&B project |
 |---|---|---|
-| LAFA | `LAFA_main.py` | `lafa-reproduction` |
-| MgHiSal | `MgHiSal_main.py` | `MgHiSal-reproduction` |
+| LAFA | `LAFA.py` | `lafa-reproduction` |
+| MgHiSal | `MgHiSal.py` | `MgHiSal-reproduction` |
 
 Every run logs its metrics and artifacts to the W&B project of its method.
 
