@@ -1,0 +1,14 @@
+# Versions used for the reported LAFA runs (Python 3.13.11).
+marimo==0.25.2
+torch==2.11.0
+torchvision==0.26.0
+wandb==0.31.0
+transformers==4.57.6
+huggingface-hub==0.36.2
+pillow==12.3.0
+numpy==2.4.6
+pandas==3.0.3
+requests
+gdrive-fsspec==0.4.1
+google-api-python-client==2.202.0
+python-dotenv==1.2.4

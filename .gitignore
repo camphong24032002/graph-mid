@@ -1,0 +1,11 @@
+.venv/
+.venv-*/
+.cache/
+.env
+__pycache__/
+__marimo__/
+data/
+wandb/
+checkpoints/
+*.pt
+.DS_Store
