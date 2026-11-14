@@ -7,6 +7,11 @@ Results and method descriptions are in the report.
 Neither paper has usable official code, so everything here is an independent
 implementation.
 
+## Disclaimer
+
+The code in this repository was written with the help of AI tools (Claude).
+The author directed the work, ran the experiments and checked the results.
+
 ## Environment used
 
 | Item | Value |
