@@ -10,7 +10,7 @@ implementation.
 ## Disclaimer
 
 The code in this repository was written with the help of AI tools.
-The author directed the work, ran the experiments and checked the results.
+The author directed the work, ran the experiments and checked the results. Due to mistake while implementing, I forgot to store the AI sessions.
 
 ## Environment used
 
