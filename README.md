@@ -75,17 +75,23 @@ Datasets are not stored in this repository.
 **LAFA.** The notebook downloads the
 FB15k-237 and WN18 triples from
 [DeepGraphLearning/KnowledgeGraphEmbedding](https://github.com/DeepGraphLearning/KnowledgeGraphEmbedding/tree/master/data) and reads the entity image archive
-`fb15k_wn18_images.zip` from Google Drive. Set `DRIVE_ROOT` near the top of the notebook to
-the Drive folder that holds the archive. The first Drive access asks for a
+`fb15k_wn18_images.zip` from Google Drive. The data folder I used is here:
+<https://drive.google.com/drive/folders/1425NcZ89eA60OzRQePlKcAEitdnnIkxG>
+
+Copy it to your Drive and set `DRIVE_ROOT` near the top of the notebook to
+the folder that holds the archive. The first Drive access asks for a
 Google login in the cell output.
 
-**MgHiSal.** The notebook reads the DB15K and MKG-W folders from Google Drive
-under `DRIVE_ROOT` (near the top of the notebook). The two source folders are:
+**MgHiSal.** The notebook reads the `MMKB-DB15K` and `MKG-W` folders from Google Drive
+under `DRIVE_ROOT` (near the top of the notebook). The data folder I used is here:
+<https://drive.google.com/drive/folders/1szrWKf_FNFB5JJWMXeY1YCMcHffaEwiG>
+
+Copy it to your Drive and adjust `DRIVE_ROOT`. The folder names must stay `MMKB-DB15K` and `MKG-W`.
+The original sources of the two datasets are:
 
 - DB15K: <https://drive.google.com/drive/folders/1eWW4QquPkZU2hEVONkJfLGpsBY_IpwR7>
 - MKG-W: <https://drive.google.com/drive/folders/1MoEJmhkwqD_CPAlfkD012pP4pBOH2Wrk>
 
-Copy both folders to your Drive and adjust `DRIVE_ROOT`.
 Entity captions come from the Hugging Face dataset
 `pengyu3/beyond-images-enriched`, and text features from
 `sentence-transformers/all-MiniLM-L6-v2`.
