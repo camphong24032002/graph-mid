@@ -62,9 +62,6 @@ def _():
 
     DRIVE_ROOT = "Master/Graph/Mid/LAFA/datasets"
 
-    print("ROOT:", ROOT)
-    print("DEVICE:", DEVICE)
-    print("EXPERIMENT:", EXPERIMENT)
     return (
         CHECKPOINT_DIR,
         DEVICE,
@@ -90,6 +87,14 @@ def _():
         wandb,
         zipfile,
     )
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## 1. Setup and Configuration
+    """)
+    return
 
 
 @app.cell
@@ -137,7 +142,6 @@ def _(DEVICE, json, np, random, torch):
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(CONFIG["seed"])
 
-    print(json.dumps(CONFIG, indent=2))
     return (CONFIG,)
 
 
@@ -155,9 +159,6 @@ def _(EXPERIMENT, os, wandb):
     # Experiment metadata
     WANDB_GROUP = EXPERIMENT
 
-    print("W&B Entity:", WANDB_ENTITY)
-    print("W&B Project:", WANDB_PROJECT)
-    print("Experiment:", EXPERIMENT)
     return WANDB_ENTITY, WANDB_PROJECT
 
 
@@ -176,14 +177,13 @@ def _(CONFIG, EXPERIMENT, json):
         "environment": "Molab",
     }
 
-    print(json.dumps(WANDB_CONFIG, indent=2))
     return (WANDB_CONFIG,)
 
 
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 1. Dataset Acquisition
+    ## 2. Dataset Acquisition
     """)
     return
 
@@ -226,8 +226,6 @@ def _(DRIVE_ROOT, ROOT):
         f"{DRIVE_ROOT}/fb15k_wn18_images.zip"
     )
 
-    print("Datasets:", list(dataset_specs))
-    print("Image archive:", image_archive_drive)
     return dataset_root, dataset_specs, drive_fs
 
 
@@ -269,13 +267,6 @@ def _(DRIVE_ROOT, drive_fs):
 
     zip_target_meta = _target_request.execute()
 
-    print("Target ID:", zip_target_id)
-    print("Name:", zip_target_meta["name"])
-    print("MIME:", zip_target_meta["mimeType"])
-    print(
-        "Size (GB):",
-        round(int(zip_target_meta.get("size", 0)) / 1024**3, 2),
-    )
     return zip_resource_key, zip_target_id, zip_target_meta
 
 
@@ -343,12 +334,10 @@ def _(
                     )
 
                     if _percent // 10 != _last_percent // 10:
-                        print(f"Downloaded: {_percent}%")
                         _last_percent = _percent
 
         _temp_path.replace(zip_local_path)
 
-    print("ZIP:", zip_local_path)
 
     with zipfile.ZipFile(zip_local_path) as _zip:
         _members = _zip.namelist()
@@ -361,9 +350,6 @@ def _(
             )
         ]
 
-        print("Total entries:", len(_members))
-        print("Image files:", len(_images))
-        print("Examples:", _images[:15])
     return (zip_local_path,)
 
 
@@ -425,10 +411,6 @@ def _(dataset_root, dataset_specs, requests):
 
                 _paths[_dataset][_split] = _path
 
-                print(
-                    f"{_dataset} {_split}: "
-                    f"{_count:,} triples"
-                )
 
         return _paths
 
@@ -443,7 +425,7 @@ def _(dataset_root, dataset_specs, requests):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 2. Knowledge Graph Preprocessing
+    ## 3. Knowledge Graph Preprocessing
     """)
     return
 
@@ -478,7 +460,6 @@ def _(dataset_specs, raw_paths, torch):
     graph_data = {}
 
     for _dataset, _paths in raw_paths.items():
-        print(f"\n=== {_dataset} ===")
 
         _raw = {
             _split: read_kg_triples(_path)
@@ -548,11 +529,9 @@ def _(dataset_specs, raw_paths, torch):
                     f"expected {_spec[_key]}, got {_actual}"
                 )
 
-        print("Entities:", len(_entities))
-        print("Relations:", len(_relations))
 
         for _split, _tensor in _splits.items():
-            print(_split, _tensor.shape)
+            pass
     return (graph_data,)
 
 
@@ -648,9 +627,6 @@ def _(EXPERIMENT, PROC_DIR, graph_data, json, np, torch):
 
         processed_paths[_dataset] = _output
 
-        print(f"\n=== {_dataset} ===")
-        print("Saved:", _output)
-        print("Split overlap:", _overlap)
     return (processed_paths,)
 
 
@@ -706,14 +682,13 @@ def _(
                 f"{_name}/train_triples": _metadata["splits"]["train"],
             })
 
-            print("Uploaded:", _dataset)
     return
 
 
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 3. Image-to-Entity Alignment
+    ## 4. Image-to-Entity Alignment
     """)
     return
 
@@ -887,15 +862,6 @@ def _(CONFIG, PROC_DIR, graph_data, json, zip_local_path, zipfile):
             _manifests[_dataset] = _manifest
             _statistics[_dataset] = _stats
 
-            print(f"\n=== {_dataset} ===")
-            print("Entities:", _num_entities)
-            print("Matched entities:", len(_manifest))
-            print("Selected images:", _stats["selected_images"])
-            print(
-                "Entities with 10 images:",
-                _stats["entities_with_10_images"],
-            )
-            print(f"Coverage: {_stats['coverage']:.2%}")
 
         return _manifests, _statistics
 
@@ -917,7 +883,6 @@ def _(graph_data, image_manifest, zip_local_path, zipfile):
 
     with zipfile.ZipFile(zip_local_path) as _archive:
         for _dataset, _manifest in image_manifest.items():
-            print(f"\n=== {_dataset} ===")
 
             for _entity_id, _paths in list(
                 _manifest.items()
@@ -926,16 +891,11 @@ def _(graph_data, image_manifest, zip_local_path, zipfile):
                     "id2entity"
                 ][int(_entity_id)]
 
-                print("Entity ID:", _entity_id)
-                print("Original entity:", _entity_name)
-                print("Images:", len(_paths))
 
                 with _archive.open(_paths[0]) as _file:
                     with Image.open(_file) as _image:
-                        print("Image dimensions:", _image.size)
+                        pass
 
-                print("Example:", _paths[0])
-                print()
     return (Image,)
 
 
@@ -1000,14 +960,13 @@ def _(
                 aliases=["latest", "v1"],
             ).wait()
 
-            print("Uploaded:", _dataset)
     return
 
 
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 4. ViT Visual Feature Extraction
+    ## 5. ViT Visual Feature Extraction
     """)
     return
 
@@ -1030,9 +989,6 @@ def _(CONFIG, DEVICE, nn):
 
     vision_model_id = "torchvision-vit-b16-imagenet1k-v1"
 
-    print("Model:", vision_model_id)
-    print("Device:", DEVICE)
-    print("Feature dimension:", CONFIG["image_dim"])
     return vision_encoder, vision_model_id, vision_transform
 
 
@@ -1059,8 +1015,6 @@ def _(CONFIG, DEVICE, EXPERIMENT, FEATURE_DIR, json, vision_model_id):
         exist_ok=True,
     )
 
-    print(json.dumps(vision_config, indent=2))
-    print("Feature output:", vision_root)
     return vision_config, vision_root
 
 
@@ -1332,12 +1286,6 @@ def _(
                     str(_shard_path)
                 )
 
-                print(
-                    f"[{dataset_name}] "
-                    f"Shard {_shard_id:05d} | "
-                    f"Entities {_start}:{_end} | "
-                    f"Images {int(_mask.sum())}/{len(_jobs)}"
-                )
 
         _total_shards = math.ceil(
             _num_entities / _shard_size
@@ -1350,10 +1298,6 @@ def _(
             for _idx in range(_total_shards)
         )
 
-        print(
-            f"\n{dataset_name}: "
-            f"{_completed}/{_total_shards} shards"
-        )
 
         return {
             "dataset": dataset_name,
@@ -1475,7 +1419,6 @@ def _(
                 ),
             })
 
-    print("Extraction:", vit_extraction_result)
     return
 
 
@@ -1791,10 +1734,6 @@ def _(
 
                         _restored += 1
 
-                        print(
-                            f"[{dataset_name}] "
-                            f"Restored bundle {_part:03d}"
-                        )
 
                     _local_digest = _digest(_paths)
 
@@ -1824,7 +1763,7 @@ def _(
                             f"{dataset_name}: Missing ViT shards "
                             f"{_missing[:8]}. "
                             "No W&B backup exists for this bundle. "
-                            "Complete Section 4 extraction first."
+                            "Complete Section 5 extraction first."
                         )
 
                     _local_digest = _digest(_paths)
@@ -1945,10 +1884,6 @@ def _(
 
                     _uploaded += 1
 
-                    print(
-                        f"[{dataset_name}] "
-                        f"Uploaded bundle {_part:03d}"
-                    )
 
                 # Mark this bundle as fully backed up
                 _marker_data = {
@@ -1973,13 +1908,6 @@ def _(
             if _run is not None:
                 _run.finish()
 
-        print(
-            f"[{dataset_name}] "
-            f"Bundles: {math.ceil(_n_shards / _shards_per_artifact)} "
-            f"| Uploaded: {_uploaded} "
-            f"| Restored: {_restored} "
-            f"| Reused: {_reused}"
-        )
 
         return True
 
@@ -1998,7 +1926,6 @@ def _(lafa_sync_visual_shards, load_visual_features):
             lafa_sync_visual_shards(_dataset)
 
         except FileNotFoundError as _error:
-            print(f"[{_dataset}] {_error}")
             continue
 
         visual_data[_dataset] = load_visual_features(
@@ -2007,19 +1934,13 @@ def _(lafa_sync_visual_shards, load_visual_features):
 
         _features = visual_data[_dataset]
 
-        print(
-            f"{_dataset} | "
-            f"Shape: {tuple(_features['images'].shape)} | "
-            f"Coverage: "
-            f"{_features['mask'].any(dim=1).float().mean().item():.2%}"
-        )
     return (visual_data,)
 
 
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 5. LAFA Model Architecture
+    ## 6. LAFA Model Architecture
     """)
     return
 
@@ -2709,7 +2630,7 @@ def _(LAFAConvE, LAFAImageFusion, LAFANeighborAggregation, math, nn, torch):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 6. Graph Neighborhood Preparation
+    ## 7. Graph Neighborhood Preparation
     """)
     return
 
@@ -2759,21 +2680,6 @@ def _(PROC_DIR, graph_data, torch):
             _output / "adjacency.pt",
         )
 
-        print(f"\n=== {_dataset} ===")
-        print("Entities:", _num_entities)
-        print("Directed edges:", len(_sorted))
-        print(
-            "Entities with neighbors:",
-            int((_degrees > 0).sum()),
-        )
-        print(
-            "Mean out-degree:",
-            round(_degrees.float().mean().item(), 2),
-        )
-        print(
-            "Max out-degree:",
-            int(_degrees.max()),
-        )
     return (neighbor_data,)
 
 
@@ -2921,13 +2827,6 @@ def _(PROC_DIR, graph_data, torch):
             _output / "train_queries.pt",
         )
 
-        print(f"\n=== {_dataset} ===")
-        print("Unique queries:", len(_queries))
-        print("Positive targets:", len(_targets))
-        print(
-            "Mean positives/query:",
-            round(len(_targets) / len(_queries), 2),
-        )
     return (query_data,)
 
 
@@ -2988,48 +2887,6 @@ def _(graph_data, query_data, sample_neighbors, torch):
         }
 
     return (prepare_lafa_batch,)
-
-
-@app.cell
-def _(prepare_lafa_batch, query_data, torch):
-    for _dataset, _data in query_data.items():
-        _num_queries = len(_data["queries"])
-
-        _indices = torch.arange(
-            min(4, _num_queries)
-        )
-
-        _batch = prepare_lafa_batch(
-            dataset_name=_dataset,
-            query_indices=_indices,
-        )
-
-        print(f"\n=== {_dataset} ===")
-
-        for _key, _tensor in _batch.items():
-            print(_key, _tensor.shape)
-
-        print(
-            "Positive labels/query:",
-            _batch["labels"].sum(dim=1).tolist(),
-        )
-
-        print(
-            "Valid neighbor slots:",
-            int(_batch["neighbor_mask"].sum()),
-        )
-
-        assert (
-            _batch["labels"].sum(dim=1) >= 1
-        ).all()
-
-        assert (
-            _batch["neighbor_ids"].shape
-            == _batch["neighbor_mask"].shape
-        )
-
-    print("\nGraph neighborhood preparation: PASS")
-    return
 
 
 @app.cell
@@ -3108,14 +2965,13 @@ def _(
                 ),
             })
 
-            print("Uploaded:", _dataset)
     return
 
 
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 7. LAFA Training Pipeline
+    ## 8. LAFA Training Pipeline
     """)
     return
 
@@ -3171,15 +3027,7 @@ def _(CHECKPOINT_DIR, CONFIG, DEVICE, torch):
     training_root = CHECKPOINT_DIR / training_version
     training_root.mkdir(parents=True, exist_ok=True)
 
-    print("Version:", training_version)
-    print("Epochs:", training_config["epochs"])
-    print("Steps/epoch:", training_config["steps_per_epoch"])
 
-    print(
-        "Effective batch size:",
-        training_config["batch_size"]
-        * training_config["accumulation_steps"],
-    )
     return training_config, training_root, training_version
 
 
@@ -3527,18 +3375,13 @@ def _(
             )
 
             try:
-                print("Restoring from W&B:", _resume_ref)
 
                 _remote = _api.artifact(_resume_ref)
                 _remote.download(root=str(_output))
 
-                print("Remote last.pt restored.")
 
             except Exception as _error:
-                print(
-                    "Remote resume unavailable:",
-                    str(_error),
-                )
+                pass
 
         # Avoid silently starting over when only best.pt exists
         if (
@@ -3548,7 +3391,7 @@ def _(
         ):
             raise RuntimeError(
                 "best.pt exists but last.pt is missing. "
-                "Use Section 8 for evaluation; "
+                "Use Section 9 for evaluation; "
                 "optimizer state cannot be resumed from best.pt."
             )
 
@@ -3710,19 +3553,9 @@ def _(
                 )
             )
 
-            print(
-                "Restored checkpoint |",
-                "epoch:", _state["epoch"],
-                "| step:", _global_step,
-                "| best epoch:", _best_epoch,
-            )
 
         # 7. Do not train again if experiment finished
         if _finished or _start_epoch > _config["epochs"]:
-            print(
-                "Training already completed.",
-                "Use Section 8 to evaluate best.pt.",
-            )
 
             return {
                 "history": _history,
@@ -3868,10 +3701,6 @@ def _(
                     aliases=_aliases,
                 ).wait()
 
-                print(
-                    f"W&B checkpoint synced: {_kind} "
-                    f"| global step {_global_step}"
-                )
 
             # 11. Epoch loop
             for _epoch in range(
@@ -4216,21 +4045,11 @@ def _(
 
                 _run.log(_log, step=_epoch)
 
-                print(
-                    f"[{dataset_name}] "
-                    f"Epoch {_epoch}/{_config['epochs']} | "
-                    f"Updates {_global_step} | "
-                    f"Loss {_train_loss:.5f} | "
-                    f"Best MRR {_best_mrr:.5f}"
-                )
 
                 _resume_indices = None
                 _resume_step = 0
 
                 if _finished:
-                    print(
-                        "Training completed or early stopped."
-                    )
                     break
 
             # Ensure best checkpoint is available remotely
@@ -4284,25 +4103,9 @@ def _(mo, train_dataset_selector, train_lafa, train_lafa_button):
         train_dataset_selector.value
     )
 
-    print(
-        "Training version:",
-        lafa_training_result["training_version"],
-    )
 
-    print(
-        "Best epoch:",
-        lafa_training_result["best_epoch"],
-    )
 
-    print(
-        "Best sampled validation MRR:",
-        lafa_training_result["best_mrr"],
-    )
 
-    print(
-        "Checkpoint:",
-        lafa_training_result["checkpoint"],
-    )
     return
 
 
@@ -4352,7 +4155,7 @@ def _(mo, torch, train_dataset_selector, training_root):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## 8. LAFA Full Filtered Evaluation
+    ## 9. LAFA Full Filtered Evaluation
     """)
     return
 
@@ -4374,8 +4177,6 @@ def _(CHECKPOINT_DIR, CONFIG, DEVICE, json, training_version):
     evaluation_root = CHECKPOINT_DIR / evaluation_version
     evaluation_root.mkdir(parents=True, exist_ok=True)
 
-    print("Evaluation:", evaluation_version)
-    print(json.dumps(evaluation_config, indent=2))
     return evaluation_config, evaluation_root, evaluation_version
 
 
@@ -4537,11 +4338,6 @@ def _(
                 f"{_artifact_name}:best"
             )
 
-            print(
-                "Local checkpoint missing.",
-                "Downloading from W&B:",
-                _artifact_ref,
-            )
 
             _checkpoint_path.parent.mkdir(
                 parents=True,
@@ -4606,16 +4402,10 @@ def _(
 
         _model.eval()
 
-        print("Dataset:", dataset_name)
-        print("Training version:", training_version)
-        print("Evaluation version:", evaluation_version)
-        print("Best epoch:", _checkpoint["best_epoch"])
-        print("Checkpoint:", _checkpoint_path)
 
         # 4. Full graph encoding
         _train = _data["train"].long().cpu()
 
-        print("Full graph edges:", len(_train))
 
         with torch.inference_mode():
             _embeddings = _model.encode_all(
@@ -4627,7 +4417,6 @@ def _(
                 use_checkpoint=False,
             )
 
-        print("Entity embeddings:", _embeddings.shape)
 
         # 5. Evaluation triples
         _test_all = _data["test"].long().cpu()
@@ -4661,10 +4450,6 @@ def _(
         if len(_test) == 0:
             raise RuntimeError("Empty test set.")
 
-        print(
-            f"Evaluating: "
-            f"{len(_test)}/{len(_test_all)} triples"
-        )
 
         # 6. Filtered evaluation
         _head_filter, _tail_filter = (
@@ -4817,21 +4602,11 @@ def _(
                 ).wait()
 
         # 10. Print results
-        print(f"\n=== {dataset_name} ===")
 
         for _direction in ("head", "tail", "both"):
             _scores = _metrics[_direction]
 
-            print(
-                f"{_direction:5s} | "
-                f"MRR: {_scores['mrr']:.4f} | "
-                f"MR: {_scores['mr']:.2f} | "
-                f"H@1: {_scores['hits1']:.4f} | "
-                f"H@3: {_scores['hits3']:.4f} | "
-                f"H@10: {_scores['hits10']:.4f}"
-            )
 
-        print("\nSaved:", _report_path)
 
         del _embeddings
         del _model
@@ -4879,20 +4654,8 @@ def _(
         evaluate_dataset_selector.value
     )
 
-    print(
-        "Evaluation:",
-        lafa_evaluation_result["evaluation_version"],
-    )
 
-    print(
-        "Filtered MRR:",
-        lafa_evaluation_result["metrics"]["both"]["mrr"],
-    )
 
-    print(
-        "Filtered Hits@10:",
-        lafa_evaluation_result["metrics"]["both"]["hits10"],
-    )
     return
 
 
@@ -4949,52 +4712,6 @@ def _(evaluation_root, evaluation_version, graph_data, json, mo):
     )
     return
 
-
-@app.cell
-def _(evaluation_root, json, torch, training_root):
-    for _name in ("FB15k-237-IMG", "WN18-IMG"):
-        _checkpoint = training_root / _name / "best.pt"
-        _report_path = (
-            evaluation_root
-            / _name
-            / "filtered_evaluation.json"
-        )
-
-        if not _checkpoint.exists() or not _report_path.exists():
-            print(_name, "Missing checkpoint or report")
-            continue
-
-        _state = torch.load(
-            _checkpoint,
-            map_location="cpu",
-            weights_only=True,
-        )
-
-        with open(
-            _report_path,
-            encoding="utf-8",
-        ) as _file:
-            _report = json.load(_file)
-
-        print(f"\n=== {_name} ===")
-        print("Best epoch:", _state["best_epoch"])
-        print("Best sampled MRR:", _state["best_mrr"])
-
-        for _direction in ("head", "tail", "both"):
-            _scores = _report["metrics"][_direction]
-
-            print(
-                f"{_direction:5s} | "
-                f"MRR: {_scores['mrr']:.4f} | "
-                f"H@1: {_scores['hits1']:.4f} | "
-                f"H@10: {_scores['hits10']:.4f}"
-            )
-    return
-
-
-@app.cell
-def _():
-    return
 
 
 if __name__ == "__main__":

@@ -28,9 +28,15 @@ def _():
 
     DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
-    print("ROOT:", ROOT)
-    print("DEVICE:", DEVICE)
     return DEVICE, ROOT, json, mo, os, torch, wandb
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## 1. Setup and Dataset Sources
+    """)
+    return
 
 
 @app.cell
@@ -38,7 +44,6 @@ def _(mo):
     from gdrive_fsspec import GoogleDriveFileSystem
 
     fs = GoogleDriveFileSystem(use_listings_cache=False, skip_instance_cache=True, auth_kwargs={"use_local_webserver": False})
-    mo.output.clear_console()
     return (fs,)
 
 
@@ -51,18 +56,15 @@ def _():
         "MMKB-DB15K": f"{DRIVE_ROOT}/MMKB-DB15K",
     }
 
-    print("MKG-W:", DATASETS["MKG-W"])
-    print("MMKB-DB15K:", DATASETS["MMKB-DB15K"])
     return DATASETS, DRIVE_ROOT
 
 
 @app.cell
 def _(DATASETS, fs):
     for _name, _path in DATASETS.items():
-        print(f"\n=== {_name} ===")
 
         for _file in fs.ls(_path, detail=False):
-            print(_file)
+            pass
     return
 
 
@@ -75,8 +77,6 @@ def _(os, wandb):
     WANDB_ENTITY = api.default_entity
     WANDB_PROJECT = "mghisal-reproduction"
 
-    print("Entity:", WANDB_ENTITY)
-    print("Project:", WANDB_PROJECT)
     return (WANDB_PROJECT,)
 
 
@@ -95,7 +95,6 @@ def _(DRIVE_ROOT, ROOT, fs):
     DB15K_OUTPUT = ROOT / "processed" / "DB15K"
     DB15K_OUTPUT.mkdir(parents=True, exist_ok=True)
 
-    print(fs.ls(DB15K_SOURCE))
     return DB15K_OUTPUT, DB15K_SOURCE
 
 
@@ -118,7 +117,7 @@ def _(DB15K_SOURCE, fs):
     }
 
     for _split, _triples in DB15K_RAW_SPLITS.items():
-        print(_split, len(_triples))
+        pass
     return DB15K_RAW_SPLITS, read_triples
 
 
@@ -147,8 +146,6 @@ def _(DB15K_RAW_SPLITS):
         for _idx, _relation in enumerate(DB15K_RELATIONS)
     }
 
-    print("Entities:", len(DB15K_ENTITY2ID))
-    print("Relations:", len(DB15K_RELATION2ID))
     return DB15K_ENTITY2ID, DB15K_RELATION2ID
 
 
@@ -192,7 +189,6 @@ def _(
         ) as _file:
             json.dump(_mapping, _file, ensure_ascii=False, indent=2)
 
-    print("Triples and mappings saved.")
     return (DB15K_NUMERIC_SPLITS,)
 
 
@@ -234,8 +230,6 @@ def _(DB15K_ENTITY2ID, DB15K_OUTPUT, DB15K_SOURCE, fs, json):
         ) as _file:
             json.dump(_content, _file, ensure_ascii=False)
 
-    print("Matched descriptions:", len(DB15K_DESCRIPTIONS))
-    print("Missing descriptions:", len(DB15K_MISSING_DESCRIPTIONS))
     return (DB15K_DESCRIPTIONS,)
 
 
@@ -264,7 +258,6 @@ def _(DB15K_OUTPUT, DB15K_SOURCE, fs, json):
     ) as _file:
         json.dump(DB15K_SAMEAS_LINKS, _file, ensure_ascii=False)
 
-    print("SameAs links:", len(DB15K_SAMEAS_LINKS))
     return (DB15K_SAMEAS_LINKS,)
 
 
@@ -302,7 +295,6 @@ def _(
     ) as _file:
         json.dump(DB15K_METADATA, _file, indent=2)
 
-    print(json.dumps(DB15K_METADATA, indent=2))
     return (DB15K_METADATA,)
 
 
@@ -321,8 +313,6 @@ def _(DRIVE_ROOT, ROOT):
     W_OUTPUT = ROOT / "processed" / "MKG-W"
     W_OUTPUT.mkdir(parents=True, exist_ok=True)
 
-    print("Source:", W_SOURCE)
-    print("Output:", W_OUTPUT)
     return W_OUTPUT, W_SOURCE
 
 
@@ -334,7 +324,7 @@ def _(W_SOURCE, read_triples):
     }
 
     for _split, _rows in W_RAW_SPLITS.items():
-        print(_split, len(_rows))
+        pass
     return (W_RAW_SPLITS,)
 
 
@@ -363,8 +353,6 @@ def _(W_RAW_SPLITS):
         for _idx, _relation in enumerate(W_RELATIONS)
     }
 
-    print("Entities:", len(W_ENTITY2ID))
-    print("Relations:", len(W_RELATION2ID))
     return W_ENTITY2ID, W_RELATION2ID
 
 
@@ -407,7 +395,6 @@ def _(W_ENTITY2ID, W_OUTPUT, W_RAW_SPLITS, W_RELATION2ID, json):
                 indent=2,
             )
 
-    print("Triples and mappings saved.")
     return (W_NUMERIC_SPLITS,)
 
 
@@ -454,8 +441,6 @@ def _(W_ENTITY2ID, W_OUTPUT, W_SOURCE, fs, json):
             indent=2,
         )
 
-    print("Entity links:", len(W_ENT_LINKS))
-    print("Mapped links:", len(W_LINKED_IDS))
     return W_ENT_LINKS, W_LINKED_IDS
 
 
@@ -502,7 +487,6 @@ def _(
             indent=2,
         )
 
-    print(json.dumps(W_METADATA, indent=2))
     return (W_METADATA,)
 
 
@@ -568,7 +552,6 @@ def _(ARTIFACTS, ARTIFACT_REFS, WANDB_PROJECT, wandb):
                 f"{_run.entity}/{_run.project}/{_name}:latest"
             )
 
-            print("Uploaded:", ARTIFACT_REFS[_name])
     return
 
 
@@ -587,7 +570,6 @@ def _(ARTIFACT_REFS, ROOT, json):
             indent=2,
         )
 
-    print(json.dumps(ARTIFACT_REFS, indent=2))
     return
 
 
@@ -637,14 +619,6 @@ def _(DB15K_OUTPUT, W_OUTPUT, json, torch):
             **_splits,
         }
 
-        print(
-            _name,
-            "Entities:", len(_entities),
-            "Relations:", len(_relations),
-            "Train:", len(_splits["train"]),
-            "Valid:", len(_splits["valid"]),
-            "Test:", len(_splits["test"]),
-        )
     return (graph_data,)
 
 
@@ -1008,8 +982,6 @@ def _(DB15K_OUTPUT, ROOT, W_OUTPUT):
     caption_repo = "pengyu3/beyond-images-enriched"
     encoder_name = "sentence-transformers/all-MiniLM-L6-v2"
 
-    print("Feature root:", features_root)
-    print("Caption source:", caption_repo)
     return (
         SentenceTransformer,
         caption_repo,
@@ -1032,7 +1004,6 @@ def _(json, load_dataset, re, unquote):
         }
 
         if not _pending:
-            print("Visual captions already cached.")
             return
 
         _rows = load_dataset(
@@ -1217,10 +1188,6 @@ def _(json, load_dataset, re, unquote):
 
             _count = len(_captions[_name])
 
-            print(
-                f"{_name}: {_count}/{_sizes[_name]} "
-                f"({100 * _count / _sizes[_name]:.2f}%)"
-            )
 
     return (cache_visual_captions,)
 
@@ -1531,7 +1498,6 @@ def _(ROOT, caption_repo, feature_sources, json, load_dataset, re, unquote):
 
             _joined[_dataset] += 1
 
-        print("Entity alignment:", _joined)
 
         # Step 2: Match image metadata
         _metadata = load_dataset(
@@ -1632,10 +1598,6 @@ def _(ROOT, caption_repo, feature_sources, json, load_dataset, re, unquote):
                     indent=2,
                 )
 
-            print(f"\n=== {_dataset} ===")
-            print("Metadata rows:", _counts[_dataset])
-            print("Mapped images:", len(_items))
-            print("Example metadata:", _examples.get(_dataset))
 
         return _manifest
 
@@ -1685,11 +1647,7 @@ def _(feature_sources, json, paper_flow_root):
         else:
             _captions = {}
 
-        print(f"\n=== {_dataset} ===")
-        print("Precomputed captions:", len(_captions))
-        print("Image-grounded MLLM records:", len(_records))
 
-    print("\nCaption fallback ready.")
     return (mllm_records,)
 
 
@@ -1731,7 +1689,6 @@ def _(hashlib, json, paper_flow_version, torch):
             )
 
             if _cached.get("fingerprint") == _fingerprint:
-                print("Loaded:", _cache_path)
 
                 return {
                     _key: _cached[_key]
@@ -1807,7 +1764,6 @@ def _(hashlib, json, paper_flow_version, torch):
             _cache_path,
         )
 
-        print("Saved:", _cache_path)
 
         return _features
 
@@ -1837,7 +1793,6 @@ def _(
     )
 
     for _dataset, _path in feature_sources.items():
-        print(f"\n=== {_dataset} ===")
 
         _inputs = prepare_entity_texts(
             _dataset,
@@ -1943,24 +1898,9 @@ def _(
                 indent=2,
             )
 
-        print("Text:", _features["text"].shape)
-        print("Summary:", _features["summary"].shape)
-        print("Visual:", _features["visual_text"].shape)
 
-        print(
-            "Precomputed captions:",
-            _metadata["precomputed_caption_entities"],
-        )
 
-        print(
-            "MLLM coverage:",
-            f"{_metadata['mllm_coverage']:.2%}",
-        )
 
-        print(
-            "Visual coverage:",
-            f"{_metadata['visual_coverage']:.2%}",
-        )
 
     del _encoder
 
@@ -2039,7 +1979,6 @@ def _(
                 aliases=["latest", "v6"],
             ).wait()
 
-            print("Uploaded:", _dataset)
     return
 
 
@@ -2098,8 +2037,6 @@ def _(DEVICE, ROOT, paper_flow_version):
     checkpoint_root = ROOT / "checkpoints" / experiment_version
     checkpoint_root.mkdir(parents=True, exist_ok=True)
 
-    print("Version:", experiment_version)
-    print("Checkpoint:", checkpoint_root)
     return F, checkpoint_root, experiment_version, training_config
 
 
@@ -2584,14 +2521,6 @@ def _(
                     indent=2,
                 )
         
-            print(
-                dataset_name,
-                "Original valid:", len(_valid_raw),
-                "Clean valid:", len(_valid),
-                "Removed train:", _removed_train,
-                "Removed test:", _removed_test,
-                "Removed duplicates:", _removed_duplicate,
-            )
 
         _num_entities = _data["num_entities"]
         _num_relations = _data["num_relations"]
@@ -2723,10 +2652,6 @@ def _(
                 _state["generator_state"].cpu()
             )
 
-            print(
-                f"{dataset_name}: "
-                f"resume epoch {_start_epoch}"
-            )
 
         if _start_epoch > _config["epochs"]:
             return {
@@ -3083,24 +3008,8 @@ def _(
                     step=_epoch,
                 )
 
-                print(
-                    f"[{dataset_name}] "
-                    f"{_epoch}/{_config['epochs']} | "
-                    f"Loss: {_loss_avg:.4f} | "
-                    f"Best MRR: {_best_mrr:.4f}"
-                    + (
-                        f" | Head: {_metrics['head']['mrr']:.4f}"
-                        f" | Tail: {_metrics['tail']['mrr']:.4f}"
-                        if _metrics is not None
-                        else ""
-                    )
-                )
 
                 if _stale >= _config["patience"]:
-                    print(
-                        f"{dataset_name}: "
-                        f"early stopping at {_epoch}"
-                    )
                     break
 
             # Versioned model artifact
@@ -3167,20 +3076,8 @@ def _(mo, train_db15k_button, train_model):
 
     train_result_db15k = train_model("DB15K")
 
-    print(
-        "Best epoch:",
-        train_result_db15k["best_epoch"],
-    )
 
-    print(
-        "Best sampled MRR:",
-        train_result_db15k["best_mrr"],
-    )
 
-    print(
-        "Checkpoint:",
-        train_result_db15k["checkpoint"],
-    )
     return
 
 
@@ -3193,20 +3090,8 @@ def _(mo, train_mkg_w_button, train_model):
 
     train_result_mkg_w = train_model("MKG_W")
 
-    print(
-        "Best epoch:",
-        train_result_mkg_w["best_epoch"],
-    )
 
-    print(
-        "Best sampled MRR:",
-        train_result_mkg_w["best_mrr"],
-    )
 
-    print(
-        "Checkpoint:",
-        train_result_mkg_w["checkpoint"],
-    )
     return
 
 
@@ -3237,7 +3122,6 @@ def _(DEVICE, experiment_version):
         )
     }
 
-    print("Evaluation version:", evaluation_version)
     return evaluation_config, evaluation_version
 
 
@@ -3399,10 +3283,6 @@ def _(
             _data
         )
 
-        print(
-            f"{dataset_name}: evaluating "
-            f"{len(_test)}/{len(_test_all)} triples"
-        )
 
         # 7. Generate entity embeddings and evaluate
         with torch.inference_mode():
@@ -3520,16 +3400,7 @@ def _(
         for _direction in ("head", "tail", "both"):
             _scores = _metrics[_direction]
 
-            print(
-                f"[{dataset_name}] {_direction} | "
-                f"MRR: {_scores['mrr']:.4f} | "
-                f"MR: {_scores['mr']:.2f} | "
-                f"H@1: {_scores['hits1']:.4f} | "
-                f"H@3: {_scores['hits3']:.4f} | "
-                f"H@10: {_scores['hits10']:.4f}"
-            )
 
-        print("Saved:", _report_path)
 
         return _result
 
@@ -3562,10 +3433,6 @@ def _(evaluate_db15k_button, mo, run_evaluation):
 
     evaluation_result_db15k = run_evaluation("DB15K")
 
-    print(
-        "Filtered MRR:",
-        evaluation_result_db15k["metrics"]["both"]["mrr"],
-    )
     return
 
 
@@ -3578,10 +3445,6 @@ def _(evaluate_mkg_w_button, mo, run_evaluation):
 
     evaluation_result_mkg_w = run_evaluation("MKG_W")
 
-    print(
-        "Filtered MRR:",
-        evaluation_result_mkg_w["metrics"]["both"]["mrr"],
-    )
     return
 
 
@@ -3656,226 +3519,6 @@ def _(checkpoint_root, evaluation_version, json, mo):
     mo.output.replace(mo.md(_report_text))
     return
 
-
-@app.cell
-def _(checkpoint_root, evaluation_version, json, torch):
-    for _name in ("DB15K", "MKG_W"):
-        _path = (
-            checkpoint_root
-            / _name
-            / f"filtered_evaluation_{evaluation_version}.json"
-        )
-
-        with open(_path, encoding="utf-8") as _file:
-            _report = json.load(_file)
-
-        _state = torch.load(
-            checkpoint_root / _name / "best.pt",
-            map_location="cpu",
-            weights_only=True,
-        )
-
-        print(f"\n=== {_name} ===")
-        print("Best epoch:", _state["best_epoch"])
-        print("Best validation MRR:", _state["best_mrr"])
-
-        for _direction in ("head", "tail", "both"):
-            _scores = _report["metrics"][_direction]
-
-            print(
-                f"{_direction}: "
-                f"MRR={_scores['mrr']:.4f}, "
-                f"H@1={_scores['hits1']:.4f}, "
-                f"H@10={_scores['hits10']:.4f}"
-            )
-    return
-
-
-@app.cell
-def _(checkpoint_root, torch):
-    for _name in ("DB15K",):
-        _state = torch.load(
-            checkpoint_root / _name / "last.pt",
-            map_location="cpu",
-            weights_only=True,
-        )
-
-        for _row in _state["history"][-10:]:
-            print(
-                f"Epoch {_row['epoch']:02d} | "
-                f"Loss: {_row['train_loss']:.4f} | "
-                f"MRR: {_row.get('filtered_mrr', float('nan')):.4f} | "
-                f"Head: {_row.get('head_mrr', float('nan')):.4f} | "
-                f"Tail: {_row.get('tail_mrr', float('nan')):.4f}"
-            )
-    return
-
-
-@app.cell
-def _(full_validation_version, mo, run_full_validation):
-    full_validation_results = {}
-
-    for _name in ("DB15K", "MKG_W"):
-        full_validation_results[_name] = (
-            run_full_validation(_name)
-        )
-
-    _rows = [
-        "| Dataset | Valid Triples | Head MRR | Tail MRR | Combined MRR | Hits@1 | Hits@10 |",
-        "|---|---:|---:|---:|---:|---:|---:|",
-    ]
-
-    for _name, _result in full_validation_results.items():
-        _metrics = _result["metrics"]
-        _both = _metrics["both"]
-
-        _rows.append(
-            f"| {_name} "
-            f"| {_result['validation_triples']} "
-            f"| {_metrics['head']['mrr']:.4f} "
-            f"| {_metrics['tail']['mrr']:.4f} "
-            f"| {_both['mrr']:.4f} "
-            f"| {_both['hits1']:.4f} "
-            f"| {_both['hits10']:.4f} |"
-        )
-
-    mo.output.replace(
-        mo.md(
-            f"### Full Validation — {full_validation_version}\n\n"
-            + "\n".join(_rows)
-        )
-    )
-    return
-
-
-@app.cell
-def _(graph_data):
-    from collections import Counter
-    from statistics import median
-
-    for _name in ("DB15K", "MKG_W"):
-        _data = graph_data[_name]
-
-        _train = [
-            tuple(_row)
-            for _row in _data["train"].tolist()
-        ]
-
-        _train_set = set(_train)
-
-        _train_entities = {
-            _entity
-            for _h, _r, _t in _train
-            for _entity in (_h, _t)
-        }
-
-        _train_hr = {
-            (_h, _r)
-            for _h, _r, _t in _train
-        }
-
-        _train_rt = {
-            (_r, _t)
-            for _h, _r, _t in _train
-        }
-
-        _relation_freq = Counter(
-            _r for _h, _r, _t in _train
-        )
-
-        print(f"\n=== {_name} ===")
-
-        for _split in ("valid", "test"):
-            _rows = [
-                tuple(_row)
-                for _row in _data[_split].tolist()
-            ]
-
-            _count = len(_rows)
-
-            _overlap = sum(
-                _row in _train_set
-                for _row in _rows
-            )
-
-            _head_unseen = sum(
-                _h not in _train_entities
-                for _h, _r, _t in _rows
-            )
-
-            _tail_unseen = sum(
-                _t not in _train_entities
-                for _h, _r, _t in _rows
-            )
-
-            _head_query_seen = sum(
-                (_r, _t) in _train_rt
-                for _h, _r, _t in _rows
-            )
-
-            _tail_query_seen = sum(
-                (_h, _r) in _train_hr
-                for _h, _r, _t in _rows
-            )
-
-            _frequencies = [
-                _relation_freq[_r]
-                for _h, _r, _t in _rows
-            ]
-
-            print(f"\n{_split.upper()}")
-            print("Triples:", _count)
-
-            print(
-                "Train overlap:",
-                f"{_overlap / _count:.2%}",
-            )
-
-            print(
-                "Unseen heads:",
-                f"{_head_unseen / _count:.2%}",
-            )
-
-            print(
-                "Unseen tails:",
-                f"{_tail_unseen / _count:.2%}",
-            )
-
-            print(
-                "Head query seen:",
-                f"{_head_query_seen / _count:.2%}",
-            )
-
-            print(
-                "Tail query seen:",
-                f"{_tail_query_seen / _count:.2%}",
-            )
-
-            print(
-                "Median relation frequency:",
-                median(_frequencies),
-            )
-
-        _valid_set = {
-            tuple(_row)
-            for _row in _data["valid"].tolist()
-        }
-
-        _test_set = {
-            tuple(_row)
-            for _row in _data["test"].tolist()
-        }
-
-        print(
-            "\nValid/Test overlap:",
-            len(_valid_set & _test_set),
-        )
-    return
-
-
-@app.cell
-def _():
-    return
 
 
 if __name__ == "__main__":
