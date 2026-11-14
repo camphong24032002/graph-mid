@@ -2476,50 +2476,50 @@ def _(
             _clean_rows.append(_row)
             _seen.add(_triple)
     
-            _valid = torch.tensor(
-                _clean_rows,
-                dtype=torch.long,
-            ).reshape(-1, 3)
-        
-            if len(_valid) == 0:
-                raise RuntimeError(
-                    f"{dataset_name}: no validation triples remain."
-                )
-        
-            _validation_stats = {
-                "policy": "exclude_train_test_overlap",
-                "dataset": dataset_name,
-                "original_valid": len(_valid_raw),
-                "clean_valid": len(_valid),
-                "removed_train": _removed_train,
-                "removed_test": _removed_test,
-                "removed_duplicate": _removed_duplicate,
-            }
-        
-            _clean_valid_path = _output / "valid_clean2id.txt"
-        
-            with open(
-                _clean_valid_path,
-                "w",
-                encoding="utf-8",
-            ) as _file:
-                for _h, _r, _t in _valid.tolist():
-                    _file.write(f"{_h}\t{_r}\t{_t}\n")
-        
-            _validation_report_path = (
-                _output / "validation_split_policy.json"
+        _valid = torch.tensor(
+            _clean_rows,
+            dtype=torch.long,
+        ).reshape(-1, 3)
+
+        if len(_valid) == 0:
+            raise RuntimeError(
+                f"{dataset_name}: no validation triples remain."
             )
-        
-            with open(
-                _validation_report_path,
-                "w",
-                encoding="utf-8",
-            ) as _file:
-                json.dump(
-                    _validation_stats,
-                    _file,
-                    indent=2,
-                )
+
+        _validation_stats = {
+            "policy": "exclude_train_test_overlap",
+            "dataset": dataset_name,
+            "original_valid": len(_valid_raw),
+            "clean_valid": len(_valid),
+            "removed_train": _removed_train,
+            "removed_test": _removed_test,
+            "removed_duplicate": _removed_duplicate,
+        }
+
+        _clean_valid_path = _output / "valid_clean2id.txt"
+
+        with open(
+            _clean_valid_path,
+            "w",
+            encoding="utf-8",
+        ) as _file:
+            for _h, _r, _t in _valid.tolist():
+                _file.write(f"{_h}\t{_r}\t{_t}\n")
+
+        _validation_report_path = (
+            _output / "validation_split_policy.json"
+        )
+
+        with open(
+            _validation_report_path,
+            "w",
+            encoding="utf-8",
+        ) as _file:
+            json.dump(
+                _validation_stats,
+                _file,
+                indent=2,
+            )
         
 
         _num_entities = _data["num_entities"]

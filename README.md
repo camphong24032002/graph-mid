@@ -7,6 +7,18 @@ Results and method descriptions are in the report.
 Neither paper has usable official code, so everything here is an independent
 implementation.
 
+> **Important: edit paths before running.** I hardcoded some relative paths
+> in the notebooks. They point to my own Google Drive layout, so you must
+> change them to your own paths first:
+>
+> | Notebook | Variable | My value | What it must point to |
+> |---|---|---|---|
+> | `LAFA.py` (line 63) | `DRIVE_ROOT` | `Master/Graph/Mid/LAFA/datasets` | Drive folder holding `fb15k_wn18_images.zip` |
+> | `MgHiSal.py` (line 52) | `DRIVE_ROOT` | `Master/Graph/Mid/MgHiSal/datasets` | Drive folder holding the `MKG-W` and `MMKB-DB15K` folders |
+>
+> Working files are written to `lafa/` or `mghisal/` under the directory
+> where you start the notebook.
+
 ## Disclaimer
 
 The code in this repository was written with the help of AI tools.
